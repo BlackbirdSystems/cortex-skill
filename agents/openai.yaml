@@ -1,0 +1,4 @@
+interface:
+  display_name: "Cortex Lifecycle Hooks"
+  short_description: "Lightweight or full lifecycle logging for complex Cortex tasks."
+  default_prompt: "Follow skills/cortex-memory-lifecycle-hooks/references/workflow-policy.md for lifecycle rules and skills/cortex-memory-lifecycle-hooks/references/industry-recipes.md for domain-specific policy."
