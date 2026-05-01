@@ -1,7 +1,8 @@
 SHELL := /bin/bash
 
 SKILL_NAME ?= cortex-memory-lifecycle-hooks
-SKILL_DIR ?= $(CURDIR)
+SELF_MAKEFILE := $(abspath $(lastword $(MAKEFILE_LIST)))
+SKILL_DIR ?= $(abspath $(dir $(SELF_MAKEFILE)))
 TARGET_PROJECT ?= $(CURDIR)
 
 CODEX_HOME ?= $(HOME)/.codex
@@ -11,8 +12,6 @@ CLAUDE_COMMAND_DIR := $(CLAUDE_HOME)/commands
 CLAUDE_COMMAND_FILE := $(CLAUDE_COMMAND_DIR)/$(SKILL_NAME).md
 
 .PHONY: install-skill install-agent-hooks uninstall-skill link-codex unlink-codex link-gemini unlink-gemini link-claude unlink-claude
-
-SELF_MAKEFILE := $(firstword $(MAKEFILE_LIST))
 
 install-skill:
 	@$(MAKE) -f "$(SELF_MAKEFILE)" link-codex
