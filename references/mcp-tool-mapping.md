@@ -11,7 +11,6 @@ Map every Cortex MCP tool to Priming, Synthesis, and Consolidation hooks so any 
 | `cortex.begin_task` | Priming | Enforced lifecycle entrypoint | Use for any complex process before substantive work. |
 | `cortex.finish_task` | Consolidation | Enforced lifecycle exitpoint | Use to close the process, documenting outcomes and risks. |
 | `cortex.store` | Synthesis | Canonical decision, discovery, failure, and durable-knowledge records | Use the routed domain recipe to decide whether to store `insight`, \`summary\`, or \`episode\`. Keep \`step_failure\` as an episodic record unless the domain recipe says otherwise. Store references, not copied file contents. |
-| `cortex.put_memory` | Synthesis | Unified storage tool | Use for storing facts, decisions, evidence, and domain-specific durable knowledge when \`store\` is not otherwise required. Prefer source-of-truth pointers over mirrored content. |
 | \`cortex.search\` | Priming / Synthesis / Consolidation | Context recall and verification | Run before each phase and once after closure to verify retrieval. Treat the repository as authoritative when a memory conflicts with a file reference. |
 | \`cortex.search\` | Priming / Synthesis / Consolidation | Semantic search | Use for broad context gathering across sessions. |
 | \`cortex.get_memory\` | Synthesis / Consolidation | Verify specific knowledge nodes | Use before updating or referencing critical information. |

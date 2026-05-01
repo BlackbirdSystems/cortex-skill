@@ -18,13 +18,13 @@ Single-turn, ad-hoc queries where no ongoing goal is established do not require 
 
 1. **Mandatory Search:** You MUST call `cortex.search` before answering any substantive question to ensure the response is memory-augmented.
 2. **Memory Reinforcement:** When a memory is used to answer a question, you MUST call `cortex.answer` for `answered_by` links or `cortex.verify` for `verified_by` links. Use `cortex.link` only for other relationship types.
-3. **Mandatory Episode Logging:** Even without a declared task, any substantive discovery, command outcome, or procedural context MUST be logged as an `episode` memory using `cortex.store` or `cortex.put_memory`.
+3. **Mandatory Episode Logging:** Even without a declared task, any substantive discovery, command outcome, or procedural context MUST be logged as an `episode` memory using `cortex.store`.
 4. **Goal Promotion:** If an ad-hoc query evolves into a goal or actionable directive, you MUST immediately call `cortex.begin_task` before proceeding.
 - **Examples:** Simple Q&A ("What does this acronym mean?"), status checks ("Is the database running?"), or read-only exploration that doesn't lead to a directive.
 
 ## Durable Memory
 
-- Use `cortex.put_memory` or `cortex.store` for reusable findings, failures, or decisions.
+- Use `cortex.store` for reusable findings, failures, or decisions.
 - Prefer connected memories over isolated notes.
 - Use `insight` for durable rules and invariants, `episode` for procedural context, and `summary` for compressed conclusions.
 
