@@ -35,6 +35,8 @@ if ! command -v python3 &> /dev/null; then
     exit 1
 fi
 
+ORIGINAL_PWD="$PWD"
+
 # 2. Download/Update the skill globally
 if [ -d "$SKILL_HOME" ]; then
     echo "Updating existing skill in $SKILL_HOME..."
@@ -47,8 +49,8 @@ else
 fi
 
 # 3. Run the internal installer
-echo "Configuring skill for the current workspace: $PWD"
-python3 "$SKILL_HOME/install.py" "$PWD"
+echo "Configuring skill for the workspace: $ORIGINAL_PWD"
+python3 "$SKILL_HOME/install.py" "$ORIGINAL_PWD"
 
 echo "--- ✅ Installation Complete ---"
 echo "The cortex-memory skill is now active in this workspace."
