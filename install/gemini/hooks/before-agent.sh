@@ -9,7 +9,7 @@ CONTEXT="<cortex-memory>
 Follow \`skills/cortex-memory-lifecycle-hooks/references/workflow-policy.md\` for the lifecycle rules.
 
 ## Mandatory Search
-You **MUST** call \`cortex.search\` before answering any substantive user questions to ensure memory-augmented recall.
+You **MUST** call \`cortex.search\` and \`semantic_search\` before answering any substantive user questions to ensure multi-level (L1/L2) memory-augmented recall.
 
 ## Memory Reinforcement
 When a memory is used to answer a question, you **MUST** call \`cortex.answer\` for \`answered_by\` links or \`cortex.verify\` for \`verified_by\` links. Use \`cortex.link\` only for other relationship types.
