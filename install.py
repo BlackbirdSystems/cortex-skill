@@ -242,21 +242,23 @@ def main():
             except Exception as e:
                 print(f"Warning: Could not update .gemini/settings.json: {e}")
 
-    # 4. Global Gemini Skill Linking
-    gemini_home = os.path.expanduser("~/.gemini")
-    global_skills_dir = os.path.join(gemini_home, "skills")
-    if os.path.exists(global_skills_dir):
-        global_skill_link = os.path.join(global_skills_dir, "cortex-memory")
-        try:
-            if os.path.islink(global_skill_link):
-                os.remove(global_skill_link)
-            elif os.path.exists(global_skill_link):
-                shutil.rmtree(global_skill_link)
+    # 4. Global Skill Linking for all supported agents
+    for agent_home in ["~/.gemini", "~/.codex", "~/.claude"]:
+        agent_path = os.path.expanduser(agent_home)
+        global_skills_dir = os.path.join(agent_path, "skills")
+        
+        if os.path.exists(global_skills_dir):
+            global_skill_link = os.path.join(global_skills_dir, "cortex-memory")
+            try:
+                if os.path.islink(global_skill_link):
+                    os.remove(global_skill_link)
+                elif os.path.exists(global_skill_link):
+                    shutil.rmtree(global_skill_link)
 
-            os.symlink(skill_dir, global_skill_link)
-            print(f"Linked skill globally to {global_skill_link}")
-        except OSError as e:
-            print(f"Warning: Could not update global Gemini skill link: {e}")
+                os.symlink(skill_dir, global_skill_link)
+                print(f"Linked skill globally for {agent_home} to {global_skill_link}")
+            except OSError as e:
+                print(f"Warning: Could not update global skill link for {agent_home}: {e}")
 
     print("✅ cortex-memory skill installed successfully with all artifacts.")
 

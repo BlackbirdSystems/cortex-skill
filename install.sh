@@ -6,9 +6,23 @@
 set -e
 
 SKILL_REPO="https://github.com/BlackbirdSystems/cortex-skill.git"
-SKILL_HOME="$HOME/.gemini/skills/cortex-memory"
+SKILL_HOME=""
+
+# Determine primary installation directory based on existing agents
+for agent in "$HOME/.gemini" "$HOME/.codex" "$HOME/.claude"; do
+    if [ -d "$agent" ]; then
+        SKILL_HOME="$agent/skills/cortex-memory"
+        break
+    fi
+done
+
+# Fallback to a neutral location if no agents are detected
+if [ -z "$SKILL_HOME" ]; then
+    SKILL_HOME="$HOME/.cortex/skills/cortex-memory"
+fi
 
 echo "--- 🧠 Cortex Memory Skill Installer ---"
+echo "Primary installation path: $SKILL_HOME"
 
 # 1. Check prerequisites
 if ! command -v git &> /dev/null; then
