@@ -1,4 +1,4 @@
-# >>> cortex memory startup block >>>
+# Cortex Memory Lifecycle
 
 ## Cortex Memory Policy
 
@@ -10,5 +10,3 @@
 ## Workflow Integration
 
 This skill is automatically injected into your session context via lifecycle hooks. You do not need to manually include these instructions in your prompts; however, you MUST adhere to the graduation and traceability rules defined in the references.
-
-# <<< cortex memory startup block <<<
