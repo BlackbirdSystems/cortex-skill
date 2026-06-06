@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 import sys
@@ -62,12 +63,34 @@ def emit_hook_context(event_name: str, context: str) -> int:
     return 0
 
 
+def calculate_checksum(path: str) -> str:
+    if not os.path.exists(path):
+        return f"Error: File not found: {path}"
+    try:
+        h = hashlib.sha256()
+        with open(path, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                h.update(chunk)
+        return h.hexdigest()
+    except Exception as e:
+        return f"Error: {e}"
+
+
 def main() -> int:
     if len(sys.argv) < 2:
-        print("Usage: hook.py <instruction-name-or-hook-event>", file=sys.stderr)
+        print("Usage: hook.py <instruction-name-or-hook-event-or-command> [args...]", file=sys.stderr)
         return 1
 
     command = sys.argv[1]
+
+    # Special Command: Checksum
+    if command == "Checksum":
+        if len(sys.argv) < 3:
+            print("Error: Missing file path for Checksum command", file=sys.stderr)
+            return 1
+        print(calculate_checksum(sys.argv[2]))
+        return 0
+
     if command in HOOK_INSTRUCTION_MAP:
         return emit_hook_context(command, load_instruction(HOOK_INSTRUCTION_MAP[command]))
 

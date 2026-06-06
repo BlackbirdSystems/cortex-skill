@@ -14,7 +14,7 @@ Cortex operates using a multi-level retrieval strategy to maximize recall while 
 When valuable information is discovered via **L2 Semantic Search** or **L3 Filesystem Exploration**, it should be "graduated" to **L1 Durable Memory** if it meets any of the following criteria:
 - **Durable Value:** The discovery represents a hard-won engineering rule, a design decision, or a recurring pattern that should survive across sessions.
 - **Task Relevance:** The information is central to the current `begin_task` goal.
-- **Sync Validation:** The source state has been validated using **checksums** to ensure the L1 memory is grounded in a verifiable version of the L2/L3 source.
+- **Sync Validation:** The source state has been validated using **checksums** (calculate using `hook.py Checksum <path>`) to ensure the L1 memory is grounded in a verifiable version of the L2/L3 source.
 
 **Graduation Action:**
 - Call `cortex.store` to persist the validated finding as an `episode` or `insight`.
