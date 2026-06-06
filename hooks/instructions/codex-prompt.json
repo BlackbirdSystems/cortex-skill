@@ -1,0 +1,3 @@
+{
+    "additionalContext": "<cortex-memory>\n## Workflow Choice\n\nFollow `skills/cortex-memory/references/workflow-policy.md` for the lifecycle rules.\n\n## Mandatory Search\nYou **MUST** call `cortex.search` before answering substantive user questions or starting non-trivial implementation work. If semantic L2 tools are available, use them next when L1 is insufficient.\n\n## Memory Reinforcement\nWhen a memory is used to answer a question, you **MUST** call `cortex.answer` for `answered_by` links or `cortex.verify` for `verified_by` links. Use `cortex.link` only for other relationship types.\n\n## Failures\n\nIf a failure teaches something reusable, capture it and link it using the workflow policy.\n</cortex-memory>\n"
+}
