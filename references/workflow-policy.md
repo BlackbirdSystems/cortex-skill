@@ -6,7 +6,7 @@ This file is the single source of truth for lifecycle behavior. Keep the skill, 
 
 Cortex operates using a multi-level retrieval strategy to maximize recall while maintaining accuracy. **If the `cortex-router` (L2 tools) is not available, L2 is skipped and L1 bridges directly to L3.**
 
-1.  **L1: Cortex Memory (`cortex.search`):** Always check durable memory first.
+1.  **L1: Cortex Memory (`cortex_search`):** Always check durable memory first.
 2.  **L2: Semantic Search (`semantic_search`):** **(Optional)** If L1 is insufficient and `cortex-router` tools are available, use semantic search to bridge to project documentation and context.
 3.  **L3: Filesystem (`glob`, `read_file`, `grep_search`):** Use the filesystem as the final source of truth.
 
@@ -17,7 +17,7 @@ When valuable information is discovered via **L2 Semantic Search** or **L3 Files
 - **Sync Validation:** The source state has been validated using **checksums** (calculate using `hook.py Checksum <path>`) to ensure the L1 memory is grounded in a verifiable version of the L2/L3 source.
 
 **Graduation Action:**
-- Call `cortex.store` to persist the validated finding as an `episode` or `insight`.
+- Call `cortex_store` to persist the validated finding as an `episode` or `insight`.
 - **Mandatory Content:** The stored memory MUST include:
     - **Brief Summary:** A concise explanation of the finding.
     - **Source References:** Clear pointers to the originating filenames (e.g., `Source: docs/ARCHITECTURE.md`).
@@ -28,41 +28,41 @@ When valuable information is discovered via **L2 Semantic Search** or **L3 Files
 
 To prevent L1 memory from becoming stale or invalid relative to the L2/L3 source of truth:
 
-1. **Validation on Retrieval:** When an L1 memory with a `Source` reference and `Checksum` is retrieved via `cortex.search`, and the current task involves that source, you MUST:
+1. **Validation on Retrieval:** When an L1 memory with a `Source` reference and `Checksum` is retrieved via `cortex_search`, and the current task involves that source, you MUST:
     - Perform a **Quick Validation** by comparing the stored `Original Checksum` against the current source state.
     - **Optimization:** If L2 tools (specifically `semantic_list_documents`) are available in your tool set, you MUST call it **once per session** (typically during the Priming phase) to gather the current state of documentation. Use this cached state for all validations in the same session.
     - If `semantic_list_documents` is not available, skip this optimization and fall back to **L3 (Filesystem)** checksum calculation for each validation.
     - If the checksums do not match, the memory is stale; invalidate it (see below) and graduate the fresh state from L2/L3.
 
-2. **Proactive Conflict Detection:** Periodically run `cortex.insights` to identify contradictions between L1 memories and newly indexed L2 documentation.
+2. **Proactive Conflict Detection:** Periodically run `cortex_insights` to identify contradictions between L1 memories and newly indexed L2 documentation.
 
 3. **Invalidation Action:**
-    - If a memory is found to be stale or incorrect, use `cortex.resolve_conflict` (if a newer version exists) or `cortex.set_visibility(hidden=true)` to archive the stale item.
+    - If a memory is found to be stale or incorrect, use `cortex_resolve_conflict` (if a newer version exists) or `cortex_set_visibility(hidden=true)` to archive the stale item.
     - Do NOT delete memories unless they are objectively false; archiving preserves the "journey" while removing noise from active retrieval.
 
 ## Task Declaration
 
 A task is any goal-oriented work, directive, or operational action (e.g., "fix this bug," "deploy to production," "research this topic").
 
-1. **Mandatory Declaration:** You MUST call `cortex.begin_task` before starting any actionable work.
-2. **Context Retrieval:** Call `cortex.search` once at the start of any new task for relevant prior context.
-3. **Extraction Configuration:** Call `cortex.configure_extraction` explicitly when recurring entities or named artifacts matter to the task goal.
+1. **Mandatory Declaration:** You MUST call `cortex_begin_task` before starting any actionable work.
+2. **Context Retrieval:** Call `cortex_search` once at the start of any new task for relevant prior context.
+3. **Extraction Configuration:** Call `cortex_configure_extraction` explicitly when recurring entities or named artifacts matter to the task goal.
 4. **Active Linking:** Resolve recurring entities aggressively and link findings, decisions, evidence, failures, and outcomes while the context is fresh.
-5. **Closure:** Call `cortex.finish_task` immediately when the work is complete or the goal is met.
+5. **Closure:** Call `cortex_finish_task` immediately when the work is complete or the goal is met.
 
 ## Exceptions (Ad-Hoc Queries)
 
 Single-turn, ad-hoc queries where no ongoing goal is established do not require a formal `begin_task`.
 
-1. **Mandatory Search:** You MUST call `cortex.search` before answering any substantive question to ensure the response is memory-augmented.
-2. **Memory Reinforcement:** When a memory is used to answer a question, you MUST call `cortex.answer` for `answered_by` links or `cortex.verify` for `verified_by` links. Use `cortex.link` only for other relationship types.
-3. **Mandatory Episode Logging:** Even without a declared task, any substantive discovery, command outcome, or procedural context MUST be logged as an `episode` memory using `cortex.store`.
-4. **Goal Promotion:** If an ad-hoc query evolves into a goal or actionable directive, you MUST immediately call `cortex.begin_task` before proceeding.
+1. **Mandatory Search:** You MUST call `cortex_search` before answering any substantive question to ensure the response is memory-augmented.
+2. **Memory Reinforcement:** When a memory is used to answer a question, you MUST call `cortex_answer` for `answered_by` links or `cortex_verify` for `verified_by` links. Use `cortex_link` only for other relationship types.
+3. **Mandatory Episode Logging:** Even without a declared task, any substantive discovery, command outcome, or procedural context MUST be logged as an `episode` memory using `cortex_store`.
+4. **Goal Promotion:** If an ad-hoc query evolves into a goal or actionable directive, you MUST immediately call `cortex_begin_task` before proceeding.
 - **Examples:** Simple Q&A ("What does this acronym mean?"), status checks ("Is the database running?"), or read-only exploration that doesn't lead to a directive.
 
 ## Durable Memory
 
-- Use `cortex.store` for reusable findings, failures, or decisions.
+- Use `cortex_store` for reusable findings, failures, or decisions.
 - Prefer connected memories over isolated notes.
 - Use `insight` for durable rules and invariants, `episode` for procedural context, and `summary` for compressed conclusions.
 

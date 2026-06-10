@@ -20,7 +20,7 @@ This catalog contains "recipes" for specific industries and domains. Use these t
 ### 1. Software Engineering
 - **Context**: Used for hardening codebases, refactoring, or feature development.
 - **Workflow**: 
-  - Call `cortex.configure_extraction` early with the smallest label set that fits the task, typically drawn from `Bug`, `Feature`, `Component`, `Commit`, and `PR`.
+  - Call `cortex_configure_extraction` early with the smallest label set that fits the task, typically drawn from `Bug`, `Feature`, `Component`, `Commit`, and `PR`.
   - Resolve recurring entities early: services, components, files, issues, PRs, migrations, incidents, and people when they materially affect the work.
   - Link memories as they are created instead of waiting until the end. At minimum, connect `finding -> evidence`, `decision -> artifact`, `fix -> regression`, and `issue -> PR/commit` when those relationships are known.
   - Store architectural decisions as standalone durable memories with links to the affected subsystem and source-of-truth artifacts.
@@ -35,7 +35,7 @@ This catalog contains "recipes" for specific industries and domains. Use these t
   - Prefer tags such as `engineering_rule`, `regression`, `compatibility`, `behavior_invariant`, and `fix_rationale`.
   - Be aggressive about linking `review finding -> fix outcome -> affected subsystem/file` and `decision -> evidence -> outcome` so later retrieval does not depend on text search alone.
 - **Retrieval Check**:
-  - After code review or bugfix work, run `cortex.search` using the component or subsystem name plus terms such as `regression`, `invariant`, `compatibility`, `fix`, or `behavior` to verify the durable memory is retrievable.
+  - After code review or bugfix work, run `cortex_search` using the component or subsystem name plus terms such as `regression`, `invariant`, `compatibility`, `fix`, or `behavior` to verify the durable memory is retrievable.
   - Prefer retrieval results that resolve to source-of-truth artifacts; if a memory looks stale, re-check the repository instead of trusting copied content.
 - **Examples**:
   - `ConflictService must honor EpisodeHideAfterSummary during explicit summarize operations.`
