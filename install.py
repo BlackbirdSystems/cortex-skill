@@ -193,7 +193,7 @@ def main():
                 for h in settings["hooks"]["SessionStart"]:
                     for inner in h.get("hooks", []):
                         if inner.get("name") == "cortex-memory-session-start":
-                            inner["command"] = f"{python_path} $GEMINI_PROJECT_DIR/.gemini/hooks/hook.py SessionStart"
+                            inner["command"] = f"{python_path} {target_hook} SessionStart"
                             found_ss = True
 
                 if not found_ss:
@@ -203,7 +203,7 @@ def main():
                             {
                                 "name": "cortex-memory-session-start",
                                 "type": "command",
-                                "command": f"{python_path} $GEMINI_PROJECT_DIR/.gemini/hooks/hook.py SessionStart"
+                                "command": f"{python_path} {target_hook} SessionStart"
                             }
                         ]
                     })
@@ -215,7 +215,7 @@ def main():
                 for h in settings["hooks"]["BeforeAgent"]:
                     for inner in h.get("hooks", []):
                         if inner.get("name") == "cortex-memory-before-agent":
-                            inner["command"] = f"{python_path} $GEMINI_PROJECT_DIR/.gemini/hooks/hook.py UserPromptSubmit"
+                            inner["command"] = f"{python_path} {target_hook} UserPromptSubmit"
                             found_ba = True
 
                 if not found_ba:
@@ -225,7 +225,7 @@ def main():
                             {
                                 "name": "cortex-memory-before-agent",
                                 "type": "command",
-                                "command": f"{python_path} $GEMINI_PROJECT_DIR/.gemini/hooks/hook.py UserPromptSubmit"
+                                "command": f"{python_path} {target_hook} UserPromptSubmit"
                             }
                         ]
                     })
