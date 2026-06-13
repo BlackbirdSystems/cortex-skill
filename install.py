@@ -245,10 +245,16 @@ def main():
     # 4. Global Skill Linking for all supported agents
     for agent_home in ["~/.gemini", "~/.codex", "~/.claude"]:
         agent_path = os.path.expanduser(agent_home)
-        global_skills_dir = os.path.join(agent_path, "skills")
-        
-        if os.path.exists(global_skills_dir):
+        if os.path.exists(agent_path):
+            global_skills_dir = os.path.join(agent_path, "skills")
+            os.makedirs(global_skills_dir, exist_ok=True)
             global_skill_link = os.path.join(global_skills_dir, "cortex-memory")
+            
+            # Avoid linking a directory to itself
+            if os.path.realpath(skill_dir) == os.path.realpath(global_skill_link):
+                print(f"Skill is already located at {global_skill_link}, skipping link.")
+                continue
+                
             try:
                 if os.path.islink(global_skill_link):
                     os.remove(global_skill_link)
