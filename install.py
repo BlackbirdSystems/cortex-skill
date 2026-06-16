@@ -152,7 +152,8 @@ def main():
             return dst
 
         # Link artifacts
-        target_hook = update_symlink(hook_py_path, hooks_dir, "hook.py")
+        hook_symlink_path = os.path.join(hooks_dir, "hook.py")
+        update_symlink(hook_py_path, hooks_dir, "hook.py")
         update_symlink(instructions_dir, hooks_dir, "instructions")
         update_symlink(references_dir, hooks_dir, "references")
 
@@ -165,82 +166,47 @@ def main():
             hooks_config["hooks"].setdefault("SessionStart", [])
             hooks_config["hooks"].setdefault("UserPromptSubmit", [])
 
+            # Use relative path to hook.py from hooks directory
+            hook_command_base = f"{python_path} {hook_symlink_path}"
+
             upsert_named_hook(
                 hooks_config["hooks"]["SessionStart"],
                 "cortex-memory-session-start",
-                f"{python_path} {target_hook} SessionStart",
+                f"{hook_command_base} SessionStart",
             )
             upsert_named_hook(
                 hooks_config["hooks"]["UserPromptSubmit"],
                 "cortex-memory-user-prompt",
-                f"{python_path} {target_hook} UserPromptSubmit",
+                f"{hook_command_base} UserPromptSubmit",
             )
 
             save_json(hooks_json_path, hooks_config)
             print(f"Configured hooks.json for {agent}")
 
-        # Update settings.json (for Gemini)
+        # Update hooks.json (for Gemini - uses same format as Claude/Codex)
         if agent == ".gemini":
-            settings_path = os.path.join(agent_dir, "settings.json")
-            try:
-                settings = load_json(settings_path, {})
-                settings.setdefault("hooks", {})
+            hooks_json_path = os.path.join(hooks_dir, "hooks.json")
+            hooks_config = load_json(hooks_json_path, {})
+            hooks_config["description"] = "Cortex Memory Lifecycle hooks"
+            hooks_config.setdefault("hooks", {})
+            hooks_config["hooks"].setdefault("SessionStart", [])
+            hooks_config["hooks"].setdefault("UserPromptSubmit", [])
 
-                if "SessionStart" not in settings["hooks"]:
-                    settings["hooks"]["SessionStart"] = []
+            hook_command_base = f"{python_path} {hook_symlink_path}"
 
-                found_ss = False
-                for h in settings["hooks"]["SessionStart"]:
-                    for inner in h.get("hooks", []):
-                        if inner.get("name") == "cortex-memory-session-start":
-                            inner["command"] = f"{python_path} {target_hook} SessionStart"
-                            found_ss = True
+            upsert_named_hook(
+                hooks_config["hooks"]["SessionStart"],
+                "cortex-memory-session-start",
+                f"{hook_command_base} SessionStart",
+            )
+            upsert_named_hook(
+                hooks_config["hooks"]["UserPromptSubmit"],
+                "cortex-memory-user-prompt",
+                f"{hook_command_base} UserPromptSubmit",
+            )
 
-                if not found_ss:
-                    settings["hooks"]["SessionStart"].append({
-                        "matcher": "*",
-                        "hooks": [
-                            {
-                                "name": "cortex-memory-session-start",
-                                "type": "command",
-                                "command": f"{python_path} {target_hook} SessionStart"
-                            }
-                        ]
-                    })
-
-                if "BeforeAgent" not in settings["hooks"]:
-                    settings["hooks"]["BeforeAgent"] = []
-
-                found_ba = False
-                for h in settings["hooks"]["BeforeAgent"]:
-                    for inner in h.get("hooks", []):
-                        if inner.get("name") == "cortex-memory-before-agent":
-                            inner["command"] = f"{python_path} {target_hook} UserPromptSubmit"
-                            found_ba = True
-
-                if not found_ba:
-                    settings["hooks"]["BeforeAgent"].append({
-                        "matcher": "*",
-                        "hooks": [
-                            {
-                                "name": "cortex-memory-before-agent",
-                                "type": "command",
-                                "command": f"{python_path} {target_hook} UserPromptSubmit"
-                            }
-                        ]
-                    })
-
-                settings.setdefault("hooksConfig", {})
-                disabled_hooks = settings["hooksConfig"].get("disabled", [])
-                settings["hooksConfig"]["disabled"] = [
-                    d for d in disabled_hooks
-                    if d not in ["cortex-memory-session-start", "cortex-memory-before-agent"]
-                ]
-
-                save_json(settings_path, settings)
-                print("Updated settings.json for .gemini")
-            except Exception as e:
-                print(f"Warning: Could not update .gemini/settings.json: {e}")
+            save_json(hooks_json_path, hooks_config)
+            print(f"Configured hooks.json for {agent}")
 
     # 4. Global Skill Linking for all supported agents
     for agent_home in ["~/.gemini", "~/.codex", "~/.claude"]:
