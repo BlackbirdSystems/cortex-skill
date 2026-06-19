@@ -100,6 +100,72 @@ def upsert_startup_block(project_root, skill_dir):
 
     save_text(target_path, existing.rstrip() + "\n\n" + template + "\n")
 
+
+def update_symlink(src, dst_dir, name):
+    dst = os.path.join(dst_dir, name)
+    if os.path.islink(dst):
+        os.remove(dst)
+    elif os.path.exists(dst):
+        if os.path.isdir(dst):
+            shutil.rmtree(dst)
+        else:
+            os.remove(dst)
+
+    rel_path = os.path.relpath(src, dst_dir)
+    os.symlink(rel_path, dst)
+    return dst
+
+
+def _upsert_lifecycle_hooks(config, python_path, hook_symlink_path):
+    """Merge cortex-memory SessionStart/UserPromptSubmit hooks into a config dict in place."""
+    config.setdefault("hooks", {})
+    config["hooks"].setdefault("SessionStart", [])
+    config["hooks"].setdefault("UserPromptSubmit", [])
+    base = f"{python_path} {hook_symlink_path}"
+    upsert_named_hook(config["hooks"]["SessionStart"], "cortex-memory-session-start", f"{base} SessionStart")
+    upsert_named_hook(config["hooks"]["UserPromptSubmit"], "cortex-memory-user-prompt", f"{base} UserPromptSubmit")
+
+
+def configure_claude_hooks(agent_dir, hooks_dir, python_path, hook_symlink_path):
+    # Claude Code reads hooks exclusively from settings.json, not hooks/hooks.json.
+    settings_path = os.path.join(agent_dir, "settings.json")
+    config = load_json(settings_path, {})
+    _upsert_lifecycle_hooks(config, python_path, hook_symlink_path)
+    save_json(settings_path, config)
+    print("Configured settings.json for .claude")
+
+    # Remove stale hooks/hooks.json written by previous versions of the installer.
+    stale = os.path.join(hooks_dir, "hooks.json")
+    if os.path.exists(stale) and not os.path.islink(stale):
+        os.remove(stale)
+        print("Removed stale hooks/hooks.json for .claude")
+
+
+def configure_codex_hooks(agent_dir, hooks_dir, python_path, hook_symlink_path):
+    hooks_json_path = os.path.join(hooks_dir, "hooks.json")
+    config = load_json(hooks_json_path, {})
+    config["description"] = "Cortex Memory Lifecycle hooks"
+    _upsert_lifecycle_hooks(config, python_path, hook_symlink_path)
+    save_json(hooks_json_path, config)
+    print("Configured hooks.json for .codex")
+
+
+def configure_gemini_hooks(agent_dir, hooks_dir, python_path, hook_symlink_path):
+    hooks_json_path = os.path.join(hooks_dir, "hooks.json")
+    config = load_json(hooks_json_path, {})
+    config["description"] = "Cortex Memory Lifecycle hooks"
+    _upsert_lifecycle_hooks(config, python_path, hook_symlink_path)
+    save_json(hooks_json_path, config)
+    print("Configured hooks.json for .gemini")
+
+
+HOOK_CONFIGURATORS = {
+    ".claude": configure_claude_hooks,
+    ".codex": configure_codex_hooks,
+    ".gemini": configure_gemini_hooks,
+}
+
+
 def main():
     skill_dir = resolve_skill_dir(__file__)
 
@@ -108,7 +174,7 @@ def main():
         project_root = os.path.abspath(sys.argv[1])
     else:
         project_root = os.path.abspath(os.path.join(skill_dir, "..", ".."))
-    
+
     print(f"Installing cortex-memory skill...")
     print(f"Project root: {project_root}")
 
@@ -118,7 +184,7 @@ def main():
     venv_dir = os.path.join(skill_dir, ".venv")
     if not os.path.exists(venv_dir):
         run_command([sys.executable, "-m", "venv", venv_dir])
-    
+
     # 2. Install requirements (if any)
     requirements_path = os.path.join(skill_dir, "requirements.txt")
     if os.path.exists(requirements_path) and os.path.getsize(requirements_path) > 0:
@@ -137,78 +203,15 @@ def main():
         hooks_dir = os.path.join(agent_dir, "hooks")
         os.makedirs(hooks_dir, exist_ok=True)
 
-        # Helper to create/update symlink
-        def update_symlink(src, dst_dir, name):
-            dst = os.path.join(dst_dir, name)
-            if os.path.islink(dst):
-                os.remove(dst)
-            elif os.path.exists(dst):
-                if os.path.isdir(dst):
-                    shutil.rmtree(dst)
-                else:
-                    os.remove(dst)
-            
-            rel_path = os.path.relpath(src, dst_dir)
-            os.symlink(rel_path, dst)
-            return dst
-
-        # Link artifacts
         hook_symlink_path = os.path.join(hooks_dir, "hook.py")
         update_symlink(hook_py_path, hooks_dir, "hook.py")
         update_symlink(checksum_py_path, hooks_dir, "checksum.py")
         update_symlink(instructions_dir, hooks_dir, "instructions")
         update_symlink(references_dir, hooks_dir, "references")
 
-        # Create/Update hooks.json (for Claude/Codex) without clobbering other hooks.
-        if agent in [".claude", ".codex"]:
-            hooks_json_path = os.path.join(hooks_dir, "hooks.json")
-            hooks_config = load_json(hooks_json_path, {})
-            hooks_config["description"] = "Cortex Memory Lifecycle hooks"
-            hooks_config.setdefault("hooks", {})
-            hooks_config["hooks"].setdefault("SessionStart", [])
-            hooks_config["hooks"].setdefault("UserPromptSubmit", [])
-
-            # Use relative path to hook.py from hooks directory
-            hook_command_base = f"{python_path} {hook_symlink_path}"
-
-            upsert_named_hook(
-                hooks_config["hooks"]["SessionStart"],
-                "cortex-memory-session-start",
-                f"{hook_command_base} SessionStart",
-            )
-            upsert_named_hook(
-                hooks_config["hooks"]["UserPromptSubmit"],
-                "cortex-memory-user-prompt",
-                f"{hook_command_base} UserPromptSubmit",
-            )
-
-            save_json(hooks_json_path, hooks_config)
-            print(f"Configured hooks.json for {agent}")
-
-        # Update hooks.json (for Gemini - uses same format as Claude/Codex)
-        if agent == ".gemini":
-            hooks_json_path = os.path.join(hooks_dir, "hooks.json")
-            hooks_config = load_json(hooks_json_path, {})
-            hooks_config["description"] = "Cortex Memory Lifecycle hooks"
-            hooks_config.setdefault("hooks", {})
-            hooks_config["hooks"].setdefault("SessionStart", [])
-            hooks_config["hooks"].setdefault("UserPromptSubmit", [])
-
-            hook_command_base = f"{python_path} {hook_symlink_path}"
-
-            upsert_named_hook(
-                hooks_config["hooks"]["SessionStart"],
-                "cortex-memory-session-start",
-                f"{hook_command_base} SessionStart",
-            )
-            upsert_named_hook(
-                hooks_config["hooks"]["UserPromptSubmit"],
-                "cortex-memory-user-prompt",
-                f"{hook_command_base} UserPromptSubmit",
-            )
-
-            save_json(hooks_json_path, hooks_config)
-            print(f"Configured hooks.json for {agent}")
+        configurator = HOOK_CONFIGURATORS.get(agent)
+        if configurator:
+            configurator(agent_dir, hooks_dir, python_path, hook_symlink_path)
 
     # 4. Global Skill Linking for all supported agents
     for agent_home in ["~/.gemini", "~/.codex", "~/.claude"]:
@@ -217,12 +220,12 @@ def main():
             global_skills_dir = os.path.join(agent_path, "skills")
             os.makedirs(global_skills_dir, exist_ok=True)
             global_skill_link = os.path.join(global_skills_dir, "cortex-memory")
-            
+
             # Avoid linking a directory to itself
             if os.path.realpath(skill_dir) == os.path.realpath(global_skill_link):
                 print(f"Skill is already located at {global_skill_link}, skipping link.")
                 continue
-                
+
             try:
                 if os.path.islink(global_skill_link):
                     os.remove(global_skill_link)
