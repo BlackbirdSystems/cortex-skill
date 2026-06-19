@@ -91,6 +91,16 @@ def main() -> int:
         print(calculate_checksum(sys.argv[2]))
         return 0
 
+    if command == "UserPromptSubmit":
+        invoked_path = sys.argv[0]
+        if ".gemini" in invoked_path:
+            instruction = "gemini-prompt"
+        elif ".claude" in invoked_path:
+            instruction = "claude-prompt"
+        else:
+            instruction = "codex-prompt"
+        return emit_hook_context(command, load_instruction(instruction))
+
     if command in HOOK_INSTRUCTION_MAP:
         return emit_hook_context(command, load_instruction(HOOK_INSTRUCTION_MAP[command]))
 

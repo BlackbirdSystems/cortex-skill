@@ -127,6 +127,7 @@ def main():
 
     # 3. Setup hooks for Claude, Codex, and Gemini
     hook_py_path = os.path.join(skill_dir, "hooks", "hook.py")
+    checksum_py_path = os.path.join(skill_dir, "hooks", "checksum.py")
     instructions_dir = os.path.join(skill_dir, "hooks", "instructions")
     references_dir = os.path.join(skill_dir, "references")
     python_path = os.path.join(venv_dir, "bin", "python3")
@@ -154,6 +155,7 @@ def main():
         # Link artifacts
         hook_symlink_path = os.path.join(hooks_dir, "hook.py")
         update_symlink(hook_py_path, hooks_dir, "hook.py")
+        update_symlink(checksum_py_path, hooks_dir, "checksum.py")
         update_symlink(instructions_dir, hooks_dir, "instructions")
         update_symlink(references_dir, hooks_dir, "references")
 
