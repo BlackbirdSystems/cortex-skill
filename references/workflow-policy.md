@@ -10,7 +10,7 @@ Cortex operates using a multi-level retrieval strategy to maximize recall while 
 2.  **L2: Semantic Search (`semantic_search`):** **(Optional)** If L1 is insufficient and `cortex-router` tools are available, use semantic search to bridge to project documentation and context.
 3.  **L3: Filesystem (`glob`, `read_file`, `grep_search`):** Use the filesystem as the final source of truth.
 
-**CRITICAL HIERARCHY RULE:** You MUST NEVER access the filesystem (L3) without first checking L1 (and L2, if available). There is no "Lightweight Path" that allows you to skip `cortex_search` or `cortex_begin_task` to save time. The filesystem should only be accessed if L1 and L2 are insufficient, or if the user explicitly provides an exact file path and requests you to only read it.
+**CRITICAL HIERARCHY RULE:** You MUST NEVER access the filesystem (L3) without first checking L1 (and L2, if available). There is no "Lightweight Path" that allows you to skip `cortex_search` to save time. The filesystem should only be accessed if L1 and L2 are insufficient, or if the user explicitly provides an exact file path and requests you to only read it.
 
 ### Graduation Lifecycle (L2/L3 -> L1)
 When valuable information is discovered via **L2 Semantic Search** or **L3 Filesystem Exploration**, it should be "graduated" to **L1 Durable Memory** if it meets any of the following criteria:
@@ -45,9 +45,9 @@ To prevent L1 memory from becoming stale or invalid relative to the L2/L3 source
 
 ## Task Declaration
 
-A task is any goal-oriented work, directive, or operational action (e.g., "fix this bug," "deploy to production," "research this topic").
+A task is any work, directive, or action that makes modifications to the codebase or environment (e.g., "fix this bug," "refactor this component," "add a new feature," "deploy to production").
 
-1. **Mandatory Declaration:** You MUST call `cortex_begin_task` before starting any actionable work.
+1. **Mandatory Declaration:** You MUST call `cortex_begin_task` before starting any work that makes modifications (e.g., modifying files, writing code, or running mutating commands). Read-only exploration (e.g., viewing files, searching, listing directories, or running diagnostics/checks) does not require `cortex_begin_task`.
 2. **Context Retrieval:** Call `cortex_search` once at the start of any new task for relevant prior context.
 3. **Extraction Configuration:** Call `cortex_configure_extraction` explicitly when recurring entities or named artifacts matter to the task goal.
 4. **Active Linking:** Resolve recurring entities aggressively and link findings, decisions, evidence, failures, and outcomes while the context is fresh.
@@ -55,13 +55,13 @@ A task is any goal-oriented work, directive, or operational action (e.g., "fix t
 
 ## Exceptions (Ad-Hoc Queries)
 
-Single-turn, ad-hoc queries where no ongoing goal is established do not require a formal `begin_task`.
+Single-turn, ad-hoc queries or read-only workflows where no ongoing modification goal is established do not require a formal `begin_task`.
 
 1. **Mandatory Search:** You MUST call `cortex_search` before answering any substantive question to ensure the response is memory-augmented.
 2. **Memory Reinforcement:** When a memory is used to answer a question, you MUST call `cortex_answer` for `answered_by` links or `cortex_verify` for `verified_by` links. Use `cortex_link` only for other relationship types.
 3. **Mandatory Episode Logging:** Even without a declared task, any substantive discovery, command outcome, or procedural context MUST be logged as an `episode` memory using `cortex_store`.
-4. **Goal Promotion:** If an ad-hoc query evolves into a goal or actionable directive, you MUST immediately call `cortex_begin_task` before proceeding.
-5. **Filesystem Prohibition:** Ad-hoc queries do NOT permit jumping straight to the filesystem. If you need to read the filesystem (`read_file`, `glob`, etc.) or execute terminal commands, the task is **not** ad-hoc. You MUST call `cortex_begin_task`.
+4. **Goal Promotion:** If an ad-hoc query evolves into a goal or actionable directive requiring modifications, you MUST immediately call `cortex_begin_task` before proceeding.
+5. **Filesystem Permission:** Ad-hoc queries permit read-only access to the filesystem (e.g. `read_file`, `glob`, `grep_search`, or running read-only diagnostic commands) to answer user questions or research a topic. However, you MUST NOT make any modifications (such as writing or editing files, or running state-mutating commands) without first declaring a task using `cortex_begin_task`.
 - **Examples:** Simple Q&A ("What does this acronym mean?"), status checks ("Is the database running?"), or read-only exploration that doesn't lead to a directive.
 
 ## Durable Memory

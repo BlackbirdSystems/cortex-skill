@@ -4,7 +4,7 @@
 
 - Use the `cortex-memory` skill for any non-trivial task.
 - **CRITICAL**: You MUST NEVER bypass `cortex_search` (L1) or `semantic_search` (L2) to access the filesystem (L3) directly.
-- **CRITICAL**: There is no "Lightweight Path". Any task requiring filesystem access or command execution MUST begin with `cortex_begin_task`.
+- **CRITICAL**: There is no "Lightweight Path". Any task making modifications (e.g. modifying files, writing code, or running mutating commands) MUST begin with `cortex_begin_task`. Read-only actions (e.g. viewing files, listing directories, or running diagnostics/checks) do not require `cortex_begin_task`.
 - **Staleness Resolution**: Use checksums + recency to validate memory against L2/L3 sources. Store references to docs/files as checksums. If a checksum mismatch occurs, ask the user to decide the source of truth before updating.
 - Follow `skills/cortex-memory/references/workflow-policy.md` for the lifecycle rules.
 - Follow `skills/cortex-memory/references/industry-recipes.md` for domain-specific extraction, linking, and durable-memory policy.

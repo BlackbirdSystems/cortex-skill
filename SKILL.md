@@ -1,11 +1,11 @@
 ---
 name: cortex-memory
-description: Strict lifecycle logging and durable memory capture for all Cortex work. You MUST execute cortex_search (L1) and semantic_search (L2, if available) before accessing the filesystem (L3), and you MUST use cortex_begin_task before starting any actionable work.
+description: Strict lifecycle logging and durable memory capture for all Cortex work. You MUST execute cortex_search (L1) and semantic_search (L2, if available) before accessing the filesystem (L3), and you MUST use cortex_begin_task before starting work that makes modifications.
 ---
 
 # Cortex Memory
 
-Strict lifecycle logging and durable memory capture for all Cortex work. You MUST execute cortex_search (L1) and semantic_search (L2, if available) before accessing the filesystem (L3), and you MUST use cortex_begin_task before starting any actionable work.
+Strict lifecycle logging and durable memory capture for all Cortex work. You MUST execute cortex_search (L1) and semantic_search (L2, if available) before accessing the filesystem (L3), and you MUST use cortex_begin_task before starting work that makes modifications.
 
 ## Mandatory Retrieval Hierarchy
 This skill enforces a multi-level retrieval strategy:
